@@ -8,6 +8,7 @@
 
 
 #include <hx/CFFI.h>
+#include <stdio.h>
 #include "JWFyber.h"
 
 
@@ -70,3 +71,14 @@ DEFINE_ENTRY_POINT (jwfyber_main);
 
 
 extern "C" int jwfyber_register_prims () { return 0; }
+
+extern "C" void send_fyber_event(const char* type, const char* data)
+{
+    value o = alloc_empty_object();
+    alloc_field(o,val_id("type"),alloc_string(type));
+	
+    if (data != NULL) alloc_field(o,val_id("data"),alloc_string(data));
+	
+    val_call1(fyber_event_handle->get(), o);
+}
+
