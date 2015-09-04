@@ -9,6 +9,8 @@ import neko.Lib;
 import openfl.events.EventDispatcher;
 import openfl.events.Event;
 
+import haxe.Json;
+
 #if (android && openfl)
 import openfl.utils.JNI;
 #end
@@ -55,7 +57,7 @@ class JWFyber {
 		}
 		else
 		{
-			jwfyber_request_offer_();
+			jwfyber_request_offer();
 		}
 		#end
 	}
