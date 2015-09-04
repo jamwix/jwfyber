@@ -8,11 +8,13 @@ extern "C" void send_fyber_event(const char* type, const char* data);
 @interface JWFyber:NSObject <SPBrandEngageClientDelegate, SPVirtualCurrencyConnectionDelegate> 
 {
     SPBrandEngageClient * _brandEngageClient;
+    bool _useToast;
 }
 
 - (void)fyberWithId: (NSString*) appId 
              userId: (NSString*) userId
-              token: (NSString*) token;
+              token: (NSString*) token
+           useToast: (bool) useToast;
 
 - (void)pauseDownloads;
 - (void)resumeDownloads;
@@ -27,7 +29,9 @@ extern "C" void send_fyber_event(const char* type, const char* data);
 - (void)fyberWithId: (NSString*) appId 
              userId: (NSString*) userId
               token: (NSString*) token
+           useToast: (bool) useToast
 {
+    _useToast = useToast;
     [NSHTTPCookieStorage sharedHTTPCookieStorage].cookieAcceptPolicy = NSHTTPCookieAcceptPolicyAlways;
     [SponsorPaySDK startForAppId: appId
                           userId: userId
@@ -120,6 +124,7 @@ extern "C" void send_fyber_event(const char* type, const char* data);
 - (void)requestOffer
 {
     _brandEngageClient = [SponsorPaySDK requestBrandEngageOffersNotifyingDelegate:self];
+    [_brandEngageClient setShouldShowRewardNotificationOnEngagementCompleted: _useToast];
 }
 
 - (void)requestOfferWithRewardType:(NSString*)rewardType placementId:(NSString*)placementId
@@ -147,7 +152,7 @@ extern "C"
 {
 
     static JWFyber * myFyber = nil;
-    void jwfStart(const char *sAppId, const char *sUserId, const char *sToken)
+    void jwfStart(const char *sAppId, const char *sUserId, const char *sToken, bool useToast)
     {
 
         if (myFyber == nil)
@@ -161,7 +166,7 @@ extern "C"
 
 //        NMEAppDelegate *appDelegate = 
 //            (NMEAppDelegate *)[[UIApplication sharedApplication] delegate];
-        [myFyber fyberWithId: appId userId: userId token: token];
+        [myFyber fyberWithId: appId userId: userId token: token useToast: useToast];
     }
 
     void jwfPauseDownloads()

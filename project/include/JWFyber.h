@@ -4,7 +4,7 @@
 
 namespace jwfyber {
 	
-    void jwfStart(const char *sAppId, const char *sUserId, const char *sToken);
+    void jwfStart(const char *sAppId, const char *sUserId, const char *sToken, bool useToast);
     void jwfLaunchOfferWall();
     void jwfPauseDownloads();
     void jwfResumeDownloads();

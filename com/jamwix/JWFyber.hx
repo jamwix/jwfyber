@@ -134,11 +134,26 @@ class JWFyber {
 		return dispatcher.dispatchEvent (event);
 	}
 
+	public static function addEventListener (type:String, listener:Dynamic):Void {
+		dispatcher.addEventListener(type, listener);
+	}
+
+	public static function removeEventListener (type:String, listener:Dynamic):Void {
+		dispatcher.removeEventListener(type, listener);
+	}
+
 	#if android
-	private static var jwfyber_start = JNI.createStaticMethod ("com.jamwix.JWFyber", "startFyber", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
-	private static var jwfyber_launch_offerwall = JNI.createStaticMethod ("com.jamwix.JWFyber", "launchOfferWall", "()V");
+	private static var jwfyber_start = JNI.createStaticMethod ("com.jamwix.JWFyber", "startFyber", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z;)V");
+	private static var jwfyber_pause_downloads = JNI.createStaticMethod("com.jamwix.JWFyber", "pauseDownloads", "()V");
+	private static var jwfyber_resume_downloads = JNI.createStaticMethod("com.jamwix.JWFyber", "resumeDownloads", "()V");
+	private static var jwfyber_request_offer = JNI.createStaticMethod("com.jamwix.JWFyber", "requestOffer", "()V");
+	private static var jwfyber_request_offer_with_reward = JNI.createStaticMethod(
+		"com.jamwix.JWFyber", 
+		"requestOfferWithReward",
+		"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+	private static var jwfyber_show_video_ad = JNI.createStaticMethod("com.jamwix.JWFyber", "showVideoAd", "()V");
 	#elseif ios
-	private static var jwfyber_start = Lib.load("jwfyber", "jwfyber_start", 3);
+	private static var jwfyber_start = Lib.load("jwfyber", "jwfyber_start", 4);
 	private static var set_event_handle = Lib.load("jwfyber", "jwfyber_set_event_handle", 1);
 	private static var jwfyber_pause_downloads = Lib.load("jwfyber", "jwfyber_pause_downloads", 0);
 	private static var jwfyber_resume_downloads = Lib.load("jwfyber", "jwfyber_resume_downloads", 0);
@@ -149,3 +164,53 @@ class JWFyber {
 	
 	
 }
+
+#if android
+
+private class FyberHandler 
+{
+	public function new ()
+	{
+	}
+
+	public function onOffersAvailable():Void
+	{
+		JWFyber.dispatchEvent(new JWFyberEvent(JWFyberEvent.OFFERS_AVAILABLE));
+	}
+
+	public function onOffersNotAvailable():Void
+	{
+		JWFyber.dispatchEvent(new JWFyberEvent(JWFyberEvent.OFFERS_NOT_AVAILABLE));
+	}
+
+	public function onOffersError(err:String):Void
+	{
+		JWFyber.dispatchEvent(new JWFyberEvent(JWFyberEvent.VIDEO_ERROR, err));
+	}
+
+	public function onCurrencyError(err:String):Void
+	{
+		JWFyber.dispatchEvent(new JWFyberEvent(JWFyberEvent.CURRENCY_ERROR, err));
+	}
+
+	public function onCurrencyRecieved(currId:String, currName:String, amount:Float, transId:String):Void
+	{
+		JWFyber.dispatchEvent(new JWFyberEvent(JWFyberEvent.CURRENCY_REWARDED, {
+			currId: currId,
+			currName: currName,
+			amount: amount,
+			transId: transId
+		}));
+	}
+
+	public function onVideoFinished():Void
+	{
+		JWFyber.dispatchEvent(new JWFyberEvent(JWFyberEvent.VIDEO_CLOSE_FINISHED));
+	}
+
+	public function onVideoAborted():Void
+	{
+		JWFyber.dispatchEvent(new JWFyberEvent(JWFyberEvent.VIDEO_CLOSE_ABORTED));
+	}
+}
+#end

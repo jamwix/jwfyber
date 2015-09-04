@@ -23,8 +23,8 @@ static value jwfyber_set_event_handle(value onEvent)
 }
 DEFINE_PRIM(jwfyber_set_event_handle, 1);
 
-static value jwfyber_start (value appId, value userId, value token) {
-    jwfStart(val_string(appId), val_string(userId), val_string(token));
+static value jwfyber_start (value appId, value userId, value token, value useToast) {
+    jwfStart(val_string(appId), val_string(userId), val_string(token), val_bool(useToast));
 	return alloc_null();
 }
 DEFINE_PRIM (jwfyber_start, 3);
