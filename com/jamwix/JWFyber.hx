@@ -21,7 +21,7 @@ class JWFyber {
 	private static var initialized = false;
 	private static var dispatcher = new EventDispatcher ();
 
-	public static function start(appId:String, userId:String, token:String):Void 
+	public static function start(appId:String, userId:String, token:String, useToast:Bool):Void 
 	{
 		#if (android || ios)
 		if (!initialized) 
@@ -30,7 +30,7 @@ class JWFyber {
 			initialized = true;
 		}
 
-		jwfyber_start(appId, userId, token);
+		jwfyber_start(appId, userId, token, useToast);
 		#end
 	}
 	

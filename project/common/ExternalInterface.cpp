@@ -27,7 +27,7 @@ static value jwfyber_start (value appId, value userId, value token, value useToa
     jwfStart(val_string(appId), val_string(userId), val_string(token), val_bool(useToast));
 	return alloc_null();
 }
-DEFINE_PRIM (jwfyber_start, 3);
+DEFINE_PRIM (jwfyber_start, 4);
 
 static value jwfyber_pause_downloads () {
     jwfPauseDownloads();
