@@ -58,18 +58,26 @@ extern "C" void send_fyber_event(const char* type, const char* data);
         case CLOSE_FINISHED:
         {
             send_fyber_event("VIDEO_CLOSE_FINISHED", "");
+            break;
         }
         case CLOSE_ABORTED:
         {
             send_fyber_event("VIDEO_CLOSE_ABORTED", "");
+            break;
         }
         case STARTED:
         {
             send_fyber_event("VIDEO_STARTED", "");
+            break;
         }
         case ERROR:
         {
             send_fyber_event("VIDEO_ERROR", "");
+            break;
+        }
+        default:
+        {
+            break;
         }
     }
 
