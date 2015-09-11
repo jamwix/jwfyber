@@ -20,17 +20,27 @@ class JWFyber {
 	
 	private static var initialized = false;
 	private static var dispatcher = new EventDispatcher ();
+#if android
+	private static var _handler:FyberHandler;
+#end
 
 	public static function start(appId:String, userId:String, token:String, useToast:Bool):Void 
 	{
-		#if (android || ios)
+		#if ios
 		if (!initialized) 
 		{
 			set_event_handle(notifyListeners);
 			initialized = true;
 		}
-
 		jwfyber_start(appId, userId, token, useToast);
+		#end
+
+		#if android
+		if (_handler == null)
+		{
+			_handler = new FyberHandler();
+		}
+		jwfyber_start(appId, userId, token, useToast, _handler);
 		#end
 	}
 	
@@ -145,14 +155,14 @@ class JWFyber {
 	}
 
 	#if android
-	private static var jwfyber_start = JNI.createStaticMethod ("com.jamwix.JWFyber", "startFyber", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z;)V");
+	private static var jwfyber_start = JNI.createStaticMethod ("com.jamwix.JWFyber", "startFyber", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLorg/haxe/lime/HaxeObject;)V");
 	private static var jwfyber_pause_downloads = JNI.createStaticMethod("com.jamwix.JWFyber", "pauseDownloads", "()V");
 	private static var jwfyber_resume_downloads = JNI.createStaticMethod("com.jamwix.JWFyber", "resumeDownloads", "()V");
 	private static var jwfyber_request_offer = JNI.createStaticMethod("com.jamwix.JWFyber", "requestOffer", "()V");
 	private static var jwfyber_request_offer_with_reward = JNI.createStaticMethod(
 		"com.jamwix.JWFyber", 
 		"requestOfferWithReward",
-		"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+		"(Ljava/lang/String;Ljava/lang/String;)V");
 	private static var jwfyber_show_video_ad = JNI.createStaticMethod("com.jamwix.JWFyber", "showVideoAd", "()V");
 	#elseif ios
 	private static var jwfyber_start = Lib.load("jwfyber", "jwfyber_start", 4);
@@ -205,8 +215,14 @@ private class FyberHandler
 		}));
 	}
 
+	public function onVideoStarted():Void
+	{
+		JWFyber.dispatchEvent(new JWFyberEvent(JWFyberEvent.VIDEO_STARTED));
+	}
+
 	public function onVideoFinished():Void
 	{
+		trace("CALLING CLOSE_FINISHED");
 		JWFyber.dispatchEvent(new JWFyberEvent(JWFyberEvent.VIDEO_CLOSE_FINISHED));
 	}
 

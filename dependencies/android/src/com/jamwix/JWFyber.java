@@ -1,15 +1,19 @@
 package com.jamwix;
 
 
+import java.lang.Runnable;
+
 import android.app.Activity;
 import android.content.res.AssetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.util.Log;
 
+import org.haxe.extension.Extension;
 import org.haxe.lime.HaxeObject;
 
 import com.sponsorpay.SponsorPay;
@@ -47,12 +51,17 @@ import com.sponsorpay.publisher.currency.SPCurrencyServerSuccessfulResponse;
 	function for performing a single task, like returning a value
 	back to Haxe from Java.
 */
-public class JWFyber extends Extension implements SPBrandEngageRequestListener {
+public class JWFyber extends Extension {
+
+    private static Handler mHandler = new Handler(Looper.getMainLooper());
 	
+    private static final String TAG = "JWFyber";
+
 	public static HaxeObject callback;
     private static JWBEListener _beListener;
     private static JWCurrencyListener _currencyListener;
     private static int VID_ACTIVITY = 9061933;
+    private static boolean _doToast;
 
 	/**
 	 * Called when an activity you launched exits, giving you the requestCode 
@@ -60,26 +69,20 @@ public class JWFyber extends Extension implements SPBrandEngageRequestListener {
 	 * from it.
 	 */
 	public boolean onActivityResult (int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult");
 		
-        if (resultCode == RESULT_OK && requestCode == JWFyber.VID_ACTIVITY) {
+        if (resultCode == Activity.RESULT_OK && requestCode == JWFyber.VID_ACTIVITY) {
             String engagementResult = data.getStringExtra(SPBrandEngageClient.SP_ENGAGEMENT_STATUS);
+            Log.d(TAG, "engagementResult: " + engagementResult);
 
-            switch (engagementResult) {
-                case "SP_REQUEST_STATUS_PARAMETER_FINISHED_VALUE": {
-                    JWFyber.callback.call0("onVideoFinished");
-                    break;
-                }
-                case "SP_REQUEST_STATUS_PARAMETER_ABORTED_VALUE": {
-                    JWFyber.callback.call0("onVideoAborted");
-                    break;
-                }
-                case "SP_REQUEST_STATUS_PARAMETER_ERROR": {
-                    JWFyber.callback.call1("onOffersError", "Unknown Video Error");
-                    break;
-                }
-                default: {
-                    break;
-                }
+            if (engagementResult.equals("CLOSE_FINISHED")) {
+                JWFyber.callback.call0("onVideoFinished");
+            } else if (engagementResult.equals("CLOSE_ABORTED")) {
+                JWFyber.callback.call0("onVideoAborted");
+            } else if (engagementResult.equals("VIDEO_ERROR")) {
+                JWFyber.callback.call1("onOffersError", "Unknown Video Error");
+            } else if (engagementResult.equals("VIDEO_STARTED")) {
+                JWFyber.callback.call0("onVideoStarted");
             }
         }
 		return true;
@@ -91,6 +94,7 @@ public class JWFyber extends Extension implements SPBrandEngageRequestListener {
 	 * Called when the activity is starting.
 	 */
 	public void onCreate (Bundle savedInstanceState) {
+        com.sponsorpay.utils.SponsorPayLogger.enableLogging(true);
 		
 	}
 	
@@ -129,7 +133,8 @@ public class JWFyber extends Extension implements SPBrandEngageRequestListener {
 	
     public static void startFyber(String appId, String userId, String securityToken, 
                                   boolean doToast, HaxeObject myCallback) {
-        SPBrandEngageClient.INSTANCE.setShowRewardsNotification(doToast);
+        _doToast = doToast;
+        Log.d(TAG, "Attempting JWFyber start");
         callback = myCallback;
         _currencyListener = new JWCurrencyListener();
         _beListener = new JWBEListener();
@@ -139,6 +144,7 @@ public class JWFyber extends Extension implements SPBrandEngageRequestListener {
         } catch (RuntimeException e){
             Log.e(TAG, e.getLocalizedMessage());
         }
+        Log.d(TAG, "JWFyber star call finished");
     }
 
     public static void pauseDownloads() {
@@ -150,7 +156,14 @@ public class JWFyber extends Extension implements SPBrandEngageRequestListener {
     }
 
     public static void requestOffer() {
-        SponsorPayPublisher.getIntentForMBEActivity(Extension.mainActivity, _beListener);
+        Log.d(TAG, "JWFyber requestOffer");
+        mHandler.post(new Runnable() {
+            public void run() {
+                SPBrandEngageClient.INSTANCE.setShowRewardsNotification(_doToast);
+                SponsorPayPublisher.getIntentForMBEActivity(Extension.mainActivity, _beListener);
+            }
+        });
+        Log.d(TAG, "JWFyber requestOffer complete");
     }
 
     public static void requestOfferWithReward(String currType, String placementId) {
@@ -203,7 +216,9 @@ public class JWFyber extends Extension implements SPBrandEngageRequestListener {
 	
 }
 
-class JWBEListener extends SPBrandEngageRequestListener {
+class JWBEListener implements SPBrandEngageRequestListener {
+    private static final String TAG = "JWFyber";
+
 	public Intent intent;
 
     @Override
@@ -228,7 +243,9 @@ class JWBEListener extends SPBrandEngageRequestListener {
     }    
 }
 
-class JWCurrencyListener extends SPCurrencyServerListener {
+class JWCurrencyListener implements SPCurrencyServerListener {
+    private static final String TAG = "JWFyber";
+
     @Override
     public void onSPCurrencyServerError(SPCurrencyServerErrorResponse response) {
         Log.e(TAG, "VCS error received - " + response.getErrorMessage());

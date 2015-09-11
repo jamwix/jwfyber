@@ -19,9 +19,9 @@ class JWFyberEvent extends Event
 	public static inline var GRAPH_SUCCESS = "GRAPH_SUCCESS";
 	public static inline var GRAPH_ERROR = "GRAPH_ERROR";
 	
-	public var data:String;
+	public var data:Dynamic;
 
-	public function new (type:String, data:String = null) 
+	public function new (type:String, data:Dynamic = null) 
 	{
 		super(type);
 		
