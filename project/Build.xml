@@ -13,7 +13,7 @@
 	<files id="iphone">
 		
 		<compilerflag value="-Iinclude"/>
-        <compilerflag value="-I/Users/Shared/sponsorpay-sdk-lib" />
+        <compilerflag value="-I/Users/Shared/sponsorpay-sdk-lib-ios" />
 		
 		<file name="iphone/JWFyber.mm"/>
 		
