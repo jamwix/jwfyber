@@ -76,13 +76,13 @@ public class JWFyber extends Extension {
             Log.d(TAG, "engagementResult: " + engagementResult);
 
             if (engagementResult.equals("CLOSE_FINISHED")) {
-                JWFyber.callback.call0("onVideoFinished");
+                JWFyber.callback.call("onVideoFinished", new Object[] { "dummy "});
             } else if (engagementResult.equals("CLOSE_ABORTED")) {
-                JWFyber.callback.call0("onVideoAborted");
+                JWFyber.callback.call("onVideoAborted", new Object[] { "dummy "});
             } else if (engagementResult.equals("VIDEO_ERROR")) {
-                JWFyber.callback.call1("onOffersError", "Unknown Video Error");
+                JWFyber.callback.call("onOffersError", new Object[] { "Unknown Video Error" });
             } else if (engagementResult.equals("VIDEO_STARTED")) {
-                JWFyber.callback.call0("onVideoStarted");
+                JWFyber.callback.call("onVideoStarted", new Object[] { "dummy "});
             }
         }
 		return true;
@@ -145,6 +145,11 @@ public class JWFyber extends Extension {
             Log.e(TAG, e.getLocalizedMessage());
         }
         Log.d(TAG, "JWFyber star call finished");
+    }
+
+    public static void setCallback(HaxeObject myCallback) {
+        Log.d(TAG, "Seting callback");
+        callback = myCallback;
     }
 
     public static void pauseDownloads() {
@@ -225,20 +230,20 @@ class JWBEListener implements SPBrandEngageRequestListener {
     public void onSPBrandEngageOffersAvailable(Intent spBrandEngageActivity) {
             Log.d(TAG, "SPBrandEngage - intent available");
             intent = spBrandEngageActivity;
-            JWFyber.callback.call0( "onOffersAvailable" );
+            JWFyber.callback.call( "onOffersAvailable", new Object[] { } );
     }
 
     @Override
     public void onSPBrandEngageOffersNotAvailable() {
             Log.d(TAG, "SPBrandEngage - no offers for the moment");
-            JWFyber.callback.call0( "onOffersNotAvailable" );
+            JWFyber.callback.call( "onOffersNotAvailable", new Object[] { "dummy "} );
             intent = null;
     }
 
     @Override
     public void onSPBrandEngageError(String errorMessage) {
         Log.d(TAG, "SPBrandEngage - an error occurred:\n" + errorMessage);
-        JWFyber.callback.call1( "onOffersError", errorMessage);
+        JWFyber.callback.call( "onOffersError", new Object[] { errorMessage });
         intent = null;
     }    
 }
@@ -249,18 +254,20 @@ class JWCurrencyListener implements SPCurrencyServerListener {
     @Override
     public void onSPCurrencyServerError(SPCurrencyServerErrorResponse response) {
         Log.e(TAG, "VCS error received - " + response.getErrorMessage());
-        JWFyber.callback.call1( "onCurrencyError", response.getErrorMessage());
+        JWFyber.callback.call( "onCurrencyError", new Object[] { response.getErrorMessage() });
     }
 
     @Override
     public void onSPCurrencyDeltaReceived(SPCurrencyServerSuccessfulResponse response) {
         Log.d(TAG, "VCS coins received - " + response.getDeltaOfCoins());
-        JWFyber.callback.call4( 
-            "onCurrencyRecieved", 
-             response.getCurrencyId(),
-             response.getCurrencyName(),
-             response.getDeltaOfCoins(),
-             response.getLatestTransactionId()
+        JWFyber.callback.call( 
+            "onCurrencyRecieved",
+            new Object[] { 
+                response.getCurrencyId(),
+                response.getCurrencyName(),
+                response.getDeltaOfCoins(),
+                response.getLatestTransactionId()
+            }
         );
     }
 }
